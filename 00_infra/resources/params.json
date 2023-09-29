@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "organisation": {
+            "value": "ts1"
+        },
+        "project": {
+            "value": "eTAS"
+        },
+        "zone": {
+            "value": "testing"
+        },
+        "environment": {
+            "value": "dev"
+        },
+        "location": {
+            "value": "australiaeast"
+        },
+        "targetSubscriptionId": {
+            "value": "5fc02796-c448-4082-9e29-aaf024a8d9ed"
+        },
+        "networkParams": {
+            "value": {
+                "ipRange": "192.168.0.0",
+                "vnetSuffix": "20",
+                "subnetSuffix": "20"
+            }
+        },
+        "platformParamsBase": {
+            "value": {
+                "isKeyVaultEnabled" : true,
+                "isSynapseEnabled" : true,
+                "isDataBricksEnabled" : true,                
+                "zoneType": "DLZ"
+            }
+        },
+        "storageParams": {
+            "value": {
+                "dataLakeNames": [
+                    "raw1",
+                    "cur1"
+                ],
+                "publicNetworkAccess": "Enabled",
+                "allowBlobPublicAccess": true,
+                "sku": "Standard_LRS",
+                "storageLock": false,
+                "storageRetentionDays": 0
+            }
+        },
+        "ingestParams": {
+            "value": {
+                "publicNetworkAccess": "Enabled",
+                "requestedBackupStorageRedundancy": "Local",
+                "adminLogin": "igor.tsurkin@exposedata.com.au",
+                "adminSid": "e6b77068-2c24-4c8a-b2d2-1ca0528df30d",
+                "adminTenantId": "828ac48e-05ab-4d94-abaf-3ccae6f84aac"
+            }
+        },
+        "warehouseParams": {
+            "value": {
+                "publicNetworkAccess": "Enabled",
+                "sqlAdministratorLogin": "exposeAdmin",
+                "sqlAdministratorLoginPassword": "Exp05eDa7a"
+            }
+        },
+        "releaseParams": {
+            "value": {
+                "ReleasedBy": "test@test.com",
+                "Version": "1.0.0"
+            }
+        }
+    }
+}

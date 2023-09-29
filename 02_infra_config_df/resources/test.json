@@ -1,0 +1,232 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "ts1-testing-dev-ingest-datafactory1"
+        },
+        "AzureSqlDatabase1_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'",
+            "defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=ts1-testing-dev-ingest-sqlserver1.database.windows.net;Initial Catalog=controldb"
+        },
+        "ls_azdatalake_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://ts1testingdevraw1.dfs.core.windows.net}/"
+        },
+        "ingest-vault-mpe_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/5fc02796-c448-4082-9e29-aaf024a8d9ed/resourceGroups/ts1-testing-dev-rg/providers/Microsoft.KeyVault/vaults/ts1-testing-dev-df-kv1"
+        },
+        "ingest-vault-mpe_properties_groupId": {
+            "type": "string",
+            "defaultValue": "vault"
+        },
+        "ingest-vault-mpe_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "ts1-testing-dev-df-kv1.vault.azure.net"
+            ]
+        },
+        "datalake-raw-mpe_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/5fc02796-c448-4082-9e29-aaf024a8d9ed/resourceGroups/ts1-testing-dev-rg/providers/Microsoft.Storage/storageAccounts/ts1testingdevraw1"
+        },
+        "datalake-raw-mpe_properties_groupId": {
+            "type": "string",
+            "defaultValue": "dfs"
+        },
+        "datalake-raw-mpe_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "ts1testingdevraw1.dfs.core.windows.net"
+            ]
+        },
+        "datalake-cur-mpe_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/5fc02796-c448-4082-9e29-aaf024a8d9ed/resourceGroups/ts1-testing-dev-rg/providers/Microsoft.Storage/storageAccounts/ts1testingdevcur1"
+        },
+        "datalake-cur-mpe_properties_groupId": {
+            "type": "string",
+            "defaultValue": "dfs"
+        },
+        "datalake-cur-mpe_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "ts1testingdevcur1.dfs.core.windows.net"
+            ]
+        },
+        "sql-server-mpe_properties_privateLinkResourceId": {
+            "type": "string",
+            "defaultValue": "/subscriptions/5fc02796-c448-4082-9e29-aaf024a8d9ed/resourceGroups/ts1-testing-dev-rg/providers/Microsoft.Sql/servers/ts1-testing-dev-ingest-sqlserver1"
+        },
+        "sql-server-mpe_properties_groupId": {
+            "type": "string",
+            "defaultValue": "sqlServer"
+        },
+        "sql-server-mpe_properties_fqdns": {
+            "type": "array",
+            "defaultValue": [
+                "ts1-testing-dev-ingest-sqlserver1.database.windows.net"
+            ]
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/runtime-australiaeast-mvnet')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "Managed",
+                "typeProperties": {
+                    "computeProperties": {
+                        "location": "AutoResolve",
+                        "dataFlowProperties": {
+                            "computeType": "General",
+                            "coreCount": 8,
+                            "timeToLive": 10,
+                            "cleanup": false
+                        },
+                        "pipelineExternalComputeScaleProperties": {
+                            "timeToLive": 60
+                        }
+                    }
+                },
+                "managedVirtualNetwork": {
+                    "type": "ManagedVirtualNetworkReference",
+                    "referenceName": "default"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AutoResolveIntegrationRuntime')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "Managed",
+                "typeProperties": {
+                    "computeProperties": {
+                        "location": "AutoResolve",
+                        "dataFlowProperties": {
+                            "computeType": "General",
+                            "coreCount": 8,
+                            "timeToLive": 0
+                        }
+                    }
+                },
+                "managedVirtualNetwork": {
+                    "type": "ManagedVirtualNetworkReference",
+                    "referenceName": "default"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_azdatalake')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "[parameters('ls_azdatalake_properties_typeProperties_url')]"
+                },
+                "connectVia": {
+                    "referenceName": "AutoResolveIntegrationRuntime",
+                    "type": "IntegrationRuntimeReference"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+            "apiVersion": "2018-06-01",
+            "properties": {},
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/ingest-vault-mpe')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('ingest-vault-mpe_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('ingest-vault-mpe_properties_groupId')]",
+                "fqdns": "[parameters('ingest-vault-mpe_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/datalake-raw-mpe')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('datalake-raw-mpe_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('datalake-raw-mpe_properties_groupId')]",
+                "fqdns": "[parameters('datalake-raw-mpe_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/datalake-cur-mpe')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('datalake-cur-mpe_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('datalake-cur-mpe_properties_groupId')]",
+                "fqdns": "[parameters('datalake-cur-mpe_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/default/sql-server-mpe')]",
+            "type": "Microsoft.DataFactory/factories/managedVirtualNetworks/managedPrivateEndpoints",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "privateLinkResourceId": "[parameters('sql-server-mpe_properties_privateLinkResourceId')]",
+                "groupId": "[parameters('sql-server-mpe_properties_groupId')]",
+                "fqdns": "[parameters('sql-server-mpe_properties_fqdns')]"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureSqlDatabase",
+                "typeProperties": {
+                    "connectionString": "[parameters('AzureSqlDatabase1_connectionString')]"
+                },
+                "connectVia": {
+                    "referenceName": "AutoResolveIntegrationRuntime",
+                    "type": "IntegrationRuntimeReference"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+            ]
+        }
+    ]
+}

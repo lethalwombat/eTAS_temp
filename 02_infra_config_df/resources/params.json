@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "ts1-testing-dev-ingest-datafactory1"
+        },
+        "storageAccount": {
+            "value": "ts1testingdevraw1"
+        },
+        "sqlServer": {
+            "value": "ts1-testing-dev-ingest-sqlserver1"
+        },
+        "synapseName": {
+            "value": "ts1-testing-dev-synapse1"
+        }        
+    }
+}
